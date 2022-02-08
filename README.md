@@ -48,6 +48,25 @@ The U-Net network has 23 convolutional layers in total.
 #### 2.1- Encoder (Downsampling Block)
 
 <p align="center">
-  <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/unet.png" alt="U-Net Architecture">
+  <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/encoder.png" alt="U-Net Encoder">
 </p>
+
+The encoder is a stack of various conv_blocks:
+
+Each conv_block() is composed of 2 **Conv2D** layers with ReLU activations. We will apply **Dropout**, and **MaxPooling2D** to some conv_blocks, as you will verify in the following sections, specifically to the last two blocks of the downsampling.
+
+The function will return two tensors:
+* next_layer: That will go into the next block.
+* skip_connection: That will go into the corresponding decoding block.
+
+**Note**: If max_pooling=True, the next_layer will be the output of the MaxPooling2D layer, but the skip_connection will be the output of the previously applied layer(Conv2D or Dropout, depending on the case). Else, both results will be identical.
+
+**conve_block**
+Here are the instructions for each step in the conv_block, or contracting block:
+* Add 2 Conv2D layers with n_filters filters with kernel_size set to 3, kernel_initializer set to ['he_normal'](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/HeNormal), padding set to 'same' and 'relu' activation.
+* if dropout_prob > 0, then add a Dropout layer with parameter dropout_prob
+* If max_pooling is set to True, then add a MaxPooling2D layer with 2x2 pool size
+
+#### 3.1 Decoder (Upsampling Block)
+The decoder, or upsampling block, upsamples the features back to the original image size. At each upsampling level, you'll take the output of the corresponding encoder block and concatenate it before feeding to the next decoder block.
 
