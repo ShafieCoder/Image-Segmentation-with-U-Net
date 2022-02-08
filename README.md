@@ -73,6 +73,20 @@ The decoder, or upsampling block, upsamples the features back to the original im
   <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/decoder.png" alt="U-Net decoder">
 </p>
 
+There are two new components in the decoder: up and merge. These are the transpose convolution and the skip connections. In addition, there are two more convolutional layers set to the same parameters as in the encoder.
 
+Here you'll encounter the Conv2DTranspose layer, which performs the inverse of the Conv2D layer. You can read more about it [here](https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv2DTranspose). 
 
+**upsampling_block**
+
+To implement the function `upsampling_block(...)`: 
+* Takes the arguments `expansive_input` (which is the input tensor from the previous layer) and `contractive_input` (the input tensor from the previous skip layer)
+* The number of filters here is the same as in the downsampling block you completed previously
+* Your `Conv2DTranspose` layer will take `n_filters` with shape (3,3) and a stride of (2,2), with padding set to `same`. It's applied to `expansive_input`, or the input tensor from the previous layer. 
+
+This block is also where you'll concatenate the outputs from the encoder blocks, creating skip connections. 
+
+* Concatenate your Conv2DTranspose layer output to the contractive input, with an `axis` of 3. In general, you can concatenate the tensors in the order that you prefer. But for the grader, it is important that you use `[up, contractive_input]`
+
+For the final component, set the parameters for two Conv2D layers to the same values that you set for the two Conv2D layers in the encoder (ReLU activation, He normal initializer, `same` padding). 
 
