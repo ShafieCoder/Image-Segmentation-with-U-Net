@@ -69,4 +69,10 @@ Here are the instructions for each step in the conv_block, or contracting block:
 
 #### 3.1 Decoder (Upsampling Block)
 The decoder, or upsampling block, upsamples the features back to the original image size. At each upsampling level, you'll take the output of the corresponding encoder block and concatenate it before feeding to the next decoder block.
+<p align="center">
+  <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/decoder.png" alt="U-Net decoder">
+</p>
+
+
+
 
