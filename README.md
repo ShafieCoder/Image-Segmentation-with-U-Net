@@ -45,7 +45,7 @@ Next is a concatenation with the correspondingly cropped feature map from the co
 
 The U-Net network has 23 convolutional layers in total.
 
-#### 2.1- Encoder (Downsampling Block)
+#### 1.2- Encoder (Downsampling Block)
 
 <p align="center">
   <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/encoder.png" alt="U-Net Encoder">
@@ -67,7 +67,7 @@ Here are the instructions for each step in the conv_block, or contracting block:
 * if dropout_prob > 0, then add a Dropout layer with parameter dropout_prob
 * If max_pooling is set to True, then add a MaxPooling2D layer with 2x2 pool size
 
-#### 3.1 Decoder (Upsampling Block)
+#### 1.3 - Decoder (Upsampling Block)
 The decoder, or upsampling block, upsamples the features back to the original image size. At each upsampling level, you'll take the output of the corresponding encoder block and concatenate it before feeding to the next decoder block.
 <p align="center">
   <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/decoder.png" alt="U-Net decoder">
@@ -89,4 +89,45 @@ This block is also where you'll concatenate the outputs from the encoder blocks,
 * Concatenate your Conv2DTranspose layer output to the contractive input, with an `axis` of 3. In general, you can concatenate the tensors in the order that you prefer. But for the grader, it is important that you use `[up, contractive_input]`
 
 For the final component, set the parameters for two Conv2D layers to the same values that you set for the two Conv2D layers in the encoder (ReLU activation, He normal initializer, `same` padding). 
+
+#### 1.4 - Build the Model
+This is where we'll put it all together, by chaining the encoder, bottleneck, and decoder! We'll need to specify the number of output channels, which for this particular set would be 23. That's because there are 23 possible labels for each pixel in this self-driving car dataset.
+
+**unet_model**
+
+For the function `unet_model`, specify the input shape, number of filters, and number of classes (23 in this case).
+
+For the first half of the model:
+
+* Begin with a `conv block` that takes the inputs of the model and the number of filters
+* Then, chain the first output element of each block to the input of the next convolutional block
+* Next, double the number of filters at each step
+* Beginning with `conv_block4`, add `dropout_prob` of 0.3
+* For the final `conv_block`, set `dropout_prob` to 0.3 again, and turn off max pooling
+
+For the second half:
+
+* Use cblock5 as `expansive_input` and cblock4 as `contractive_input`, with n_filters * 8. This is your `bottleneck layer`.
+* Chain the output of the previous block as `expansive_input` and the corresponding `contractive block output`.
+* Note that you must use the second element of the `contractive block` before the `max pooling layer`.
+* At each step, use half the number of filters of the previous block
+* conv9 is a `Conv2D layer` with `ReLU` activation, He normal initializer, `same` padding
+* Finally, conv10 is a Conv2D that takes the number of classes as the filter, a kernel size of 1, and `"same"` padding. The output of conv10 is the output of your model.
+
+#### 1.4 - Loss Function
+In semantic segmentation, you need as many masks as you have object classes. In the dataset you're using, each pixel in every mask has been assigned a single integer probability that it belongs to a certain class, from 0 to num_classes-1. The correct class is the layer with the higher probability.
+
+This is different from `categorical crossentropy`, where the labels should be one-hot encoded (just 0s and 1s). Here, you'll use sparse categorical crossentropy as your loss function, to perform pixel-wise multiclass prediction. Sparse categorical crossentropy is more efficient than other loss functions when you're dealing with lots of classes.
+
+#### 1.5 - Dataset Handling
+
+Below, define a function that allows you to display both an input image, and its ground truth: the true mask. The true mask is what your trained model output is aiming to get as close to as possible.
+
+## 2 - Train the Model
+In this stage we train the model, and by defining a function uses `tf.argmax` in the axis of the number of classes to return the index with the largest value and merge the prediction into a single image. Finally we can check our predicted masks against the true mask and the original input image to chack final results.
+
+
+
+
+
 
