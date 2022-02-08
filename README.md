@@ -10,7 +10,7 @@ This type of image classification is called semantic image segmentation. It's si
 
  Region-specific labeling is a pretty crucial consideration for self-driving cars, which require a pixel-perfect understanding of their environment so they can change lanes and avoid other cars, or any number of traffic obstacles that can put peoples' lives in danger.
  
- ## 1. U-Net
+ ## 1- U-Net
  
 U-Net, named for its U-shape, was originally created in 2015 for tumor detection, but in the years since has become a very popular choice for other semantic segmentation tasks.
 
@@ -20,7 +20,34 @@ Unfortunately, the final feature layer of the FCN suffers from information loss 
 
 U-Net improves on the FCN, using a somewhat similar design, but differing in some important ways. Instead of one transposed convolution at the end of the network, it uses a matching number of convolutions for downsampling the input image to a feature map, and transposed convolutions for upsampling those maps back up to the original input image size. It also adds skip connections, to retain information that would otherwise become lost during encoding. Skip connections send information to every upsampling layer in the decoder from the corresponding downsampling layer in the encoder, capturing finer information while also keeping computation low. These help prevent information loss, as well as model overfitting.
 
-#### 1.1 Model Details
+#### 1.1- Model Details
 <p align="center">
-  <img width="500" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/carseg.png" alt="Example of segmented image">
+  <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/unet.png" alt="U-Net Architecture">
 </p>
+
+__Contracting path__ (Encoder containing downsampling steps):
+
+Images are first fed through several convolutional layers which reduce height and width, while growing the number of channels.
+
+The contracting path follows a regular CNN architecture, with convolutional layers, their activations, and pooling layers to downsample the image and extract its features. In detail, it consists of the repeated application of two 3 x 3 unpadded convolutions, each followed by a rectified linear unit (ReLU) and a 2 x 2 max pooling operation with stride 2 for downsampling. At each downsampling step, the number of feature channels is doubled.
+
+**Crop function**: This step crops the image from the contracting path and concatenates it to the current image on the expanding path to create a skip connection.
+
+**Expanding path** (Decoder containing upsampling steps):
+
+The expanding path performs the opposite operation of the contracting path, growing the image back to its original size, while shrinking the channels gradually.
+
+In detail, each step in the expanding path upsamples the feature map, followed by a 2 x 2 convolution (the transposed convolution). This transposed convolution halves the number of feature channels, while growing the height and width of the image.
+
+Next is a concatenation with the correspondingly cropped feature map from the contracting path, and two 3 x 3 convolutions, each followed by a ReLU. You need to perform cropping to handle the loss of border pixels in every convolution.
+
+**Final Feature Mapping Block**: In the final layer, a 1x1 convolution is used to map each 64-component feature vector to the desired number of classes. The channel dimensions from the previous layer correspond to the number of filters used, so when you use 1x1 convolutions, you can transform that dimension by choosing an appropriate number of 1x1 filters. When this idea is applied to the last layer, you can reduce the channel dimensions to have one layer per class.
+
+The U-Net network has 23 convolutional layers in total.
+
+#### 2.1- Encoder (Downsampling Block)
+
+<p align="center">
+  <img width="700" src="https://github.com/ShafieCoder/Image-Segmentation-with-U-Net/blob/main/images/unet.png" alt="U-Net Architecture">
+</p>
+
